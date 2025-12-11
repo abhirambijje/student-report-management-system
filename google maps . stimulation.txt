@@ -1,0 +1,106 @@
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <map>
+#include <string>
+using namespace std;
+
+// -------------------------------
+// User-defined Function Prototypes
+// -------------------------------
+void addRoad(map<string, vector<string>>& graph, const string& A, const string& B);
+bool dfsPath(const map<string, vector<string>>& graph, const string& start, const string& destination, vector<string>& path);
+
+// -------------------------------
+// MAIN FUNCTION
+// -------------------------------
+int main() {
+    map<string, vector<string>> cityMap;
+    int n;
+
+    cout << "------ GOOGLE MAPS : DFS ROUTE FINDER ------\n";
+    cout << "Enter number of roads to add: ";
+    cin >> n;
+
+    cout << "\nEnter road connections (Example: A B means A <-> B):\n";
+    for (int i = 0; i < n; i++) {
+        string u, v;
+        cin >> u >> v;
+        addRoad(cityMap, u, v);
+    }
+
+    string start, destination;
+    cout << "\nEnter Source Location: ";
+    cin >> start;
+
+    cout << "Enter Destination Location: ";
+    cin >> destination;
+
+    vector<string> path;
+
+    cout << "\nSearching for route using DFS...\n";
+
+    if (dfsPath(cityMap, start, destination, path)) {
+        cout << "\nROUTE FOUND:\n";
+        for (const string& loc : path)
+            cout << loc << " -> ";
+        cout << "END\n";
+    } else {
+        cout << "\nNo route found between " << start << " and " << destination << ".\n";
+    }
+
+    return 0;
+}
+
+// ------------------------------------------
+// USER-DEFINED FUNCTION: Add Roads (Undirected Graph)
+// ------------------------------------------
+void addRoad(map<string, vector<string>>& graph, const string& A, const string& B) {
+    graph[A].push_back(B);
+    graph[B].push_back(A);   // because roads are two-way
+}
+
+// ------------------------------------------
+// USER-DEFINED FUNCTION: DFS Route Finder
+// ------------------------------------------
+bool dfsPath(const map<string, vector<string>>& graph, const string& start, const string& destination, vector<string>& path) {
+    map<string, bool> visited;
+    map<string, string> parent;
+
+    stack<string> st;
+    st.push(start);
+    visited[start] = true;
+
+    bool found = false;
+
+    while (!st.empty()) {
+        string current = st.top();
+        st.pop();
+
+        if (current == destination) {
+            found = true;
+            break;
+        }
+
+        for (const string& neighbor : graph.at(current)) {
+            if (!visited[neighbor]) {
+                visited[neighbor] = true;
+                parent[neighbor] = current;
+                st.push(neighbor);
+            }
+        }
+    }
+
+    if (!found)
+        return false;
+
+    // reconstruct path
+    string curr = destination;
+    while (curr != start) {
+        path.insert(path.begin(), curr);
+        curr = parent[curr];
+    }
+    path.insert(path.begin(), start);
+
+    return true;
+}
